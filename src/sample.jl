@@ -1,7 +1,7 @@
 #
 # sample
 #
-function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::GaussianRandomField, reorder::AbstractArray{<:Integer, 1}, qoi::AbstractQoi, solver::AbstractSolver, reuse::AbstractReuse, analyse::AbstractAnalyse)
+function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::GaussianRandomField, reorder::AbstractArray{<:Integer, 1}, qoi::AbstractQoi, solver::AbstractSolver, reuse::AbstractReuse, analyse::AbstractAnalyse, problem::Symbol)
 
 	# wrap the sample code in a try-catch  
 	ntries = 3
@@ -19,7 +19,7 @@ function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::Gaussia
 			range = StepRange.(step, step, size(k))
 			view(k, range...)
 		end
-		g(n, m) = elliptic2d(f(n, m))
+		g(n, m) = problem == :dirichlet ? elliptic2d(f(n, m)) : neumann2d(f(n, m))
 
 		if analyse isa AnalyseV
 			return μ_cycle_solve(g, sz, solver, 50)
@@ -115,7 +115,7 @@ end
 "point evaluation of solution at 16 points along middle line"
 @inline function apply_qoi(x, ::Qoi3)
 	xp = PaddedView(0, x, size(x).+2, (2,2))
-	itp = interpolate(xp, BSpline(Linear()))
+	itp = interpolate(xp, BSpline(Interpolations.Linear()))
 	sz = size(x) .+ 1
 	itp(div(sz[1], 2), range(1, stop=size(xp,2), length=16))
 end

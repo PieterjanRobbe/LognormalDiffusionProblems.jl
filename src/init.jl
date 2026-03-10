@@ -81,7 +81,9 @@ get_arg(args::Dict{Symbol,Any}, arg::Val{T}) where T = throw(ArgumentError(strin
 
 @get_arg :max_search_space ndims(args[:index_set]) == 1 ? ML() : TD(2)
 
-forbidden_keys() = [:nb_of_coarse_dofs, :covariance_function, :length_scale, :smoothness, :grf_generator, :minpadding, :index_set, :qoi, :damping, :solver, :analyse]
+@get_arg :problem :dirichlet
+
+forbidden_keys() = [:nb_of_coarse_dofs, :covariance_function, :length_scale, :smoothness, :grf_generator, :minpadding, :index_set, :qoi, :damping, :solver, :analyse, :problem]
 
 #
 # init_lognormal
@@ -117,12 +119,16 @@ function init_lognormal(index_set::AbstractIndexSet, sample_method::AbstractSamp
     # sample function
     qoi = get_arg(args, :qoi)
     solver = get_arg(args, :solver)
+    problem = get_arg(args, :problem)
+    if !(problem in (:dirichlet, :neumann))
+        throw(ArgumentError("problem should be :dirichlet or :neumann."))
+    end
     reuse = index_set isa U ? Reuse() : NoReuse()
     analyse = get_arg(args, :analyse)
     if analyse != NoAnalyse() && get_arg(args, :solver) == DirectSolver()
         throw(ArgumentError("no analyse available for DirectSolver."))
     end
-    sample_function = (index, x) -> sample_lognormal(index, x, grfs[index], reorder[index], qoi, solver, reuse, analyse)
+    sample_function = (index, x) -> sample_lognormal(index, x, grfs[index], reorder[index], qoi, solver, reuse, analyse, problem)
 
     # distributions
     s = maximum(randdim.(collect(values(grfs))))
