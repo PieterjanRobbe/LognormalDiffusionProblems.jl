@@ -20,8 +20,8 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [sources]
 MultilevelEstimators = {rev = "v0.1.5", url = "https://github.com/PieterjanRobbe/MultilevelEstimators.jl.git"}
-NotSoSimpleMultigrid = {rev = "v1.1.1", url = "https://github.com/PieterjanRobbe/NotSoSimpleMultigrid.jl.git"}
-SimpleMultigrid = {rev = "v1.1.1", url = "https://github.com/PieterjanRobbe/SimpleMultigrid.jl.git"}
+NotSoSimpleMultigrid = {rev = "v1.1.2", url = "https://github.com/PieterjanRobbe/NotSoSimpleMultigrid.jl.git"}
+SimpleMultigrid = {rev = "v1.1.2", url = "https://github.com/PieterjanRobbe/SimpleMultigrid.jl.git"}
 
 [compat]
 FFTW = "1"
