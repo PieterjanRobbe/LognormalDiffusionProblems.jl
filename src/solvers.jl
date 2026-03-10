@@ -1,9 +1,9 @@
 #
 # direct solver
 #
-function FMG_solve(f::Function, sz::Dims, index::Index, solver::DirectSolver, reuse::NoReuse)
+function FMG_solve(f::Function, b::Function, sz::Dims, index::Index, solver::DirectSolver, reuse::NoReuse)
 	A = f(sz...)
-	x = A\ones(size(A, 1))
+	x = A\b(sz...)
 	[x], [sz], nothing
 end
 
@@ -12,9 +12,9 @@ end
 #
 
 "return the Multigrid residual norm after `iters` multigrid μ-cycles"
-function μ_cycle_solve(f::Function, sz::Dims, solver::AbstractMGSolver, iters::Integer)
+function μ_cycle_solve(f::Function, b::Function, sz::Dims, solver::AbstractMGSolver, iters::Integer)
 	mg = MG(f, sz, solver)
-	fill!(mg.grids[1].b, 1)
+	copyto!(mg.grids[1].b, b(sz...))
 	for iter in Iterators.take(mg, iters) end
     mg.resnorm
 end
@@ -27,9 +27,9 @@ MG(f, sz, solver::MSGSolver) = NotSoSimpleMultigrid.MultigridMethod(f, sz, solve
 #
 
 "use FMG to solve the PDE, and optionally return the number of μ-cycle iterations on each grid"
-function FMG_solve(f::Function, sz::Dims, index::Index, solver::AbstractSolver, reuse::AbstractReuse)
+function FMG_solve(f::Function, b::Function, sz::Dims, index::Index, solver::AbstractSolver, reuse::AbstractReuse)
 	mg = MG(f, sz, solver)
-	fill!(mg.grids[1].b, 1)
+	copyto!(mg.grids[1].b, b(sz...))
     sol, iters = FMG!(mg, 1)
 	R = selectrange(index, reuse)
     view(sol, R), view(size.(mg.grids), R), iters

@@ -18,7 +18,7 @@ import NotSoSimpleMultigrid: grids_at_level, child_iter, parent_iter, high_freq_
 
 ## export statements ##
 
-export init_lognormal, sample_lognormal, compute_grf, Qoi1, Qoi2, Qoi3, Qoi4, DirectSolver, MGSolver, MSGSolver, AnalyseV, AnalyseFMG
+export init_lognormal, sample_lognormal, mixed_bc_rhs, compute_grf, Qoi1, Qoi2, Qoi3, Qoi4, DirectSolver, MGSolver, MSGSolver, AnalyseV, AnalyseFMG
 
 ## include statements ##
 

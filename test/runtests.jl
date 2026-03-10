@@ -43,6 +43,8 @@ end
     @test Q_dirichlet isa Float64
     @test isapprox(dQ_default, dQ_dirichlet, rtol=1e-12, atol=1e-12)
     @test isapprox(Q_default, Q_dirichlet, rtol=1e-12, atol=1e-12)
+    @test dQ_neumann > dQ_dirichlet
+    @test Q_neumann > Q_dirichlet
 
     @test_throws ArgumentError init_lognormal(ML(), MC(), problem=:invalid_problem)
 end

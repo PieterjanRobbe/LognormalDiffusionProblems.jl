@@ -1,6 +1,21 @@
 #
 # sample
 #
+function mixed_bc_rhs(k::AbstractMatrix{<:AbstractFloat}; forcing=1.0, left_value=0.0, right_value=1.0)
+	nx, ny = size(k)
+	n = nx + 1
+	rhs = fill(float(forcing), nx, ny)
+
+	if left_value != 0
+		rhs[1, :] .+= n^2 .* k[1, :] .* left_value
+	end
+	if right_value != 0
+		rhs[end, :] .+= n^2 .* k[end, :] .* right_value
+	end
+
+	vec(rhs)
+end
+
 function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::GaussianRandomField, reorder::AbstractArray{<:Integer, 1}, qoi::AbstractQoi, solver::AbstractSolver, reuse::AbstractReuse, analyse::AbstractAnalyse, problem::Symbol)
 
 	# wrap the sample code in a try-catch  
@@ -20,12 +35,13 @@ function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::Gaussia
 			view(k, range...)
 		end
 		g(n, m) = problem == :dirichlet ? elliptic2d(f(n, m)) : neumann2d(f(n, m))
+		b(n, m) = problem == :dirichlet ? ones(prod((n, m) .- 1)) : mixed_bc_rhs(f(n, m))
 
 		if analyse isa AnalyseV
-			return μ_cycle_solve(g, sz, solver, 50)
+			return μ_cycle_solve(g, b, sz, solver, 50)
 		else
 			# solve
-			xfs, szs, iters = FMG_solve(g, sz, index, solver, reuse)
+			xfs, szs, iters = FMG_solve(g, b, sz, index, solver, reuse)
 			if analyse isa AnalyseFMG 
 				return iters
 			else
@@ -36,7 +52,7 @@ function sample_lognormal(index::Index, x::Vector{<:AbstractFloat}, grf::Gaussia
 				if reuse isa NoReuse
 					for (key, val) in diff(index)
 						szc = div.(sz, max.(1, (index - key).I .* 2))
-						xcs, szcs = FMG_solve(g, szc, key, solver, reuse)
+						xcs, szcs = FMG_solve(g, b, szc, key, solver, reuse)
 						Qc = apply_qoi(xcs, szcs, key, reuse, qoi)
 						dQ += val*Qc
 					end
